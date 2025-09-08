@@ -5,9 +5,10 @@
     {% include 'nav.html' %}
     <hr>
 
-    <div class="row">
+    <div>
         {% if current_user.is_authenticated %}
-        <span class="btn btn-primary">{{current_user.username}}</span>
+        <span class="btn btn-primary">{{current_user.name}} </span>
+        <a href="{{url_for('logout')}}" class="btn btn-danger">Sair</a>
         {% else %}
 
         <form action="" method="post" class="row mt-4 p-4 round border shadow">

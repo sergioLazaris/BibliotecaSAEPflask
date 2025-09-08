@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime, timedelta
+from flask_login import UserMixin
 
 def one_week_from_now():
     return datetime.now() + timedelta(weeks=1)
@@ -18,7 +19,7 @@ class Student(db.Model):
     name = db.Column(db.String, nullable = False)
     registration = db.Column(db.Integer, primary_key = True)
 
-class Employee(db.Model):
+class Employee(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable = False)
     password = db.Column(db.String, nullable = False)

@@ -1,5 +1,5 @@
-{{ extends "base.html" }}
-{{ block content }}
+{% extends 'base.html' %}
+{% block content %}
 
     <div class="container">
         {% include 'nav.html' %}
@@ -15,12 +15,12 @@
             {{form.password.label}}
             {{form.password(class="form-control", placeholder="Senha do Usuário")}}
 
-            {{form.confirmPassword.label}}
-            {{form.confirmPassword(class="form-control", placeholder="Confirme a Senha do Usuário")}}
+            {{form.confirmation.label}}
+            {{form.confirmation(class="form-control", placeholder="Confirme a Senha do Usuário")}}
 
             {{form.btnSubmit(class="btn btn-primary col-12 mt-3")}}
 
         </form>
 
     </div>
-{{ endblock }}
+{% endblock %}

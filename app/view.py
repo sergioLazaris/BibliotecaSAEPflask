@@ -25,8 +25,7 @@ def bookRegister():
         return redirect(url_for('homepage'))
     return render_template('livro.html', form=form)
 
-@app.route('/cadastro/')
-@login_required
+@app.route('/cadastro/', methods = ['GET', 'POST'])
 def cadastro():
     form = SignInForm()
     if form.validate_on_submit():
