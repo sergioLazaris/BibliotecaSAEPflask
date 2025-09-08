@@ -1,0 +1,26 @@
+{{ extends "base.html" }}
+{{ block content }}
+
+    <div class="container">
+        {% include 'nav.html' %}
+        <div class="row mt-4">
+            <h3>Cadastro de Funcionário</h3>
+        </div>
+        <form action="" method="post" class="row mt-4 p-4 round border shadow">
+            {{form.csrf_token}}
+
+            {{form.username.label}}
+            {{form.username(class="form-control", placeholder="Nome de Usuário")}}
+
+            {{form.password.label}}
+            {{form.password(class="form-control", placeholder="Senha do Usuário")}}
+
+            {{form.confirmPassword.label}}
+            {{form.confirmPassword(class="form-control", placeholder="Confirme a Senha do Usuário")}}
+
+            {{form.btnSubmit(class="btn btn-primary col-12 mt-3")}}
+
+        </form>
+
+    </div>
+{{ endblock }}
