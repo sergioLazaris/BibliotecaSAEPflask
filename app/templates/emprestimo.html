@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    {% include 'nav.html' %}
+    <hr>
+    <div class="row">
+        <h3>Registro de Empréstimo</h3>
+    </div>
+    <form action="" method="post" class="row mt-4 p-4 round border shadow">
+        {{form.csrf_token}}
+
+        {{form.loanStudent.label}}
+        {{form.loanStudent(class="form-control", placeholder="Matrícula do Estudante")}}
+
+        {{form.loanBook.label}}
+        {{form.loanBook(class="form-control", placeholder="ID do Livro")}}
+
+        {{form.status.label}}
+        {{form.status(class="form-control", placeholder="Status (disponível, emprestado, reservado ou atrasado)")}}
+
+        {{form.btnSubmit(class="btn btn-primary col-12 mt-3")}}
+    </form>
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class = "container">
+        {% include 'nav.html' %}
+        <hr>
+        <div class = "row">
+            <h3>Lista de Empréstimos</h3>
+        <form action="" method="get" class="row">
+            <div class="col-9">
+                <input type="text" name="pesquisa" class="form-control">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Pesquisar</button>
+            </div>
+        
+        </form>
+        
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID Livro</th>
+                        <th>Título Livro</th>
+                        <th>Matrícula Aluno</th>
+                        <th>Nome Aluno</th>
+                        <th>Data de Devolução</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <body>
+                    {% for linha in context['dados'] %}
+                    <tr>
+                        <td>{{linha.id}}</td>
+                        <td>{{linha.loanBook}}</td>
+                        <td>{{linha.book.name}}</td>
+                        <td>{{linha.loanStudent}}</td>
+                        <td>{{linha.student.name}}</td>
+                        <td>{{linha.returnDate}}</td>
+                        <td>{{linha.status}}</td>
+                        <td>
+                            <a href="{{ url_for('loanEdit', id=linha.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                            <form action="{{ url_for('loanDelete', id=linha.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
+                                    Excluir
+                                </button>
+                            </form>
+                        </td>                        
+                        </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
+        
+        </div>
+            
+        
+    </div>
+
+{% endblock %}

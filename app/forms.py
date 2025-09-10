@@ -82,15 +82,15 @@ class StudentForm(FlaskForm):
 
 
 class LoanForm(FlaskForm):
-    LoanBook = StringField('ID do Livro', validators=[DataRequired()])
-    LoanStudent = StringField('Matrícula do Aluno', validators=[DataRequired()])
+    loanBook = StringField('ID do Livro', validators=[DataRequired()])
+    loanStudent = StringField('Matrícula do Aluno', validators=[DataRequired()])
     status = StringField('Status', validators=[DataRequired()])
     btnSubmit = SubmitField('Registrar Empréstimo')
 
     def save(self):
         loan = Loan(
-            LoanBook=self.LoanBook.data,
-            LoanStudent=self.LoanStudent.data,
+            loanBook=self.loanBook.data,
+            loanStudent=self.loanStudent.data,
             status=self.status.data
         )
         db.session.add(loan)

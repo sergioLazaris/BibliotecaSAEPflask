@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class = "container">
+        {% include 'nav.html' %}
+        <hr>
+        <div class = "row">
+            <h3>Lista de Alunos</h3>
+        <form action="" method="get" class="row">
+            <div class="col-9">
+                <input type="text" name="pesquisa" class="form-control">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Pesquisar</button>
+            </div>
+        
+        </form>
+        
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <body>
+                    {% for linha in context['dados'] %}
+                    <tr>
+                        <td>{{linha.name}}</td>
+                        <td>{{linha.registration}}</td>
+                        <td>
+                            <a href="{{ url_for('studentEdit', id=linha.registration) }}" class="btn btn-sm btn-warning">Editar</a>
+                            <form action="{{ url_for('studentDelete', id=linha.registration) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
+                                    Excluir
+                                </button>
+                            </form>
+                        </td>                        
+                        </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
+        
+        </div>
+            
+        
+    </div>
+
+{% endblock %}

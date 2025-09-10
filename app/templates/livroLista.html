@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class = "container">
+        {% include 'nav.html' %}
+        <hr>
+        <div class = "row">
+            <h3>Lista de Livros</h3>
+        <form action="" method="get" class="row">
+            <div class="col-9">
+                <input type="text" name="pesquisa" class="form-control">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Pesquisar</button>
+            </div>
+        
+        </form>
+        
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editora</th>
+                        <th>Ano de Publicação</th>
+                        <th>Gênero</th>
+                        <th>Disponíveis</th>
+                        <th>Qtd. Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <body>
+                    {% for linha in context['dados'] %}
+                    <tr>
+                        <td>{{linha.id}}</td>
+                        <td>{{linha.title}}</td>
+                        <td>{{linha.author}}</td>
+                        <td>{{linha.publisher}}</td>
+                        <td>{{linha.publiYear}}</td>
+                        <td>{{linha.genre}}</td>
+                        <td>{{linha.availNumber}}</td>
+                        <td>{{linha.totalNumber}}</td>
+                        <td>
+                            <a href="{{ url_for('bookEdit', id=linha.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                            <form action="{{ url_for('bookDelete', id=linha.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
+                                    Excluir
+                                </button>
+                            </form>
+                        </td>
+                        </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
+        
+        </div>
+            
+        
+    </div>
+
+{% endblock %}

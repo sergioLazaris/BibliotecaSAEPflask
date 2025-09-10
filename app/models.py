@@ -10,7 +10,7 @@ class Book(db.Model):
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
     publisher = db.Column(db.String, nullable=False)
-    publiYear = db.Column(db.DateTime, default=datetime.now())
+    publiYear = db.Column(db.Integer, nullable=False)
     genre = db.Column(db.String, nullable=False)
     availNumber = db.Column(db.Integer, nullable=False)
     totalNumber = db.Column(db.Integer, nullable=False)
@@ -26,7 +26,10 @@ class Employee(db.Model, UserMixin):
 
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    LoanBook = db.Column(db.ForeignKey('Book.id'))
-    LoanStudent = db.Column(db.ForeignKey('Student.registration'))
+    loanBook = db.Column(db.ForeignKey('book.id'))
+    loanStudent = db.Column(db.ForeignKey('student.registration'))
     returnDate = db.Column(db.DateTime, default=one_week_from_now())
     status = db.Column(db.String, nullable=False)
+
+    student = db.relationship("Student", backref="loans")
+    book = db.relationship("Book", backref="loans")

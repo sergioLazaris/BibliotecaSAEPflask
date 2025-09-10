@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class = "container">
+        {% include 'nav.html' %}
+        <hr>
+        <div class = "row">
+            <h3>Cadastro de Alunos</h3>
+        </div>
+            <form action="" method="post" class="row mt-4 p-4 round border shadow">
+                {{form.csrf_token}}
+    
+                {{form.name.label}}
+                {{form.name(class="form-control")}}
+    
+                {{form.registration.label}}
+                {{form.registration(class="form-control")}}
+    
+                {{form.btnSubmit(class="btn btn-primary col-12 mt-3")}}
+        </form>
+    </div>
+
+{% endblock %}
