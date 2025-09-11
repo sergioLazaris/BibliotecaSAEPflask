@@ -1,8 +1,25 @@
 from app import app, db
 from flask import render_template, request, redirect, url_for
 from app.forms import LoginForm, BookForm, SignInForm, StudentForm, LoanForm
-from app.models import Student, Book, Loan
+from app.models import Student, Book, Loan, LoanEvent
 from flask_login import login_user, logout_user, current_user, login_required 
+from datetime import datetime
+from flask import g
+from datetime import datetime, timedelta
+
+@app.before_request
+def atualizar_status_atrasados():
+    hoje = datetime.now()
+    emprestimos = Loan.query.filter(
+        Loan.status == 'Emprestado',
+        Loan.returnDate == None,
+        Loan.returnLimit < hoje
+    ).all()
+    for emprestimo in emprestimos:
+        emprestimo.status = 'Atrasado'
+    if emprestimos:
+        db.session.commit()
+
 
 @app.route('/', methods = ['GET', 'POST'])
 def homepage():
@@ -167,7 +184,19 @@ def loanRegister():
             raise ValueError("Aluno não encontrado")
         if not book:
             raise ValueError("Livro não encontrado")
+        if book.availNumber <= 0:
+            raise ValueError("Quantidade de livros disponíveis insuficiente")
+        book.availNumber -= 1
         form.save()
+        loan = Loan.query.order_by(Loan.id.desc()).first()
+        evento = LoanEvent(
+        loan_id=loan.id,
+        event_type='Empréstimo',
+        book_title = loan.book.title,
+        student_name = loan.student.name
+        )
+        db.session.add(evento)
+        db.session.commit()
         return redirect(url_for('homepage'))
     return render_template('emprestimo.html', form=form)
 
@@ -184,7 +213,7 @@ def loanList():
         dados = dados.filter_by(loanStudent=pesquisa)
     context = {'dados': dados.all()}
 
-    return render_template('emprestimoLista.html', context=context)
+    return render_template('emprestimoLista.html', context=context, now=datetime.now)
 
 
 @app.route('/emprestimo/editar/<int:id>', methods=['GET', 'POST'])
@@ -205,7 +234,6 @@ def loanEdit(id):
         # Atualiza os campos do empréstimo
         loan.loanStudent = form.loanStudent.data
         loan.loanBook = form.loanBook.data
-        loan.status = form.status.data
         db.session.commit()
 
         return redirect(url_for('loanList'))  # redireciona de volta pra lista
@@ -213,9 +241,29 @@ def loanEdit(id):
     # Preenche os campos do form com os valores antigos
     form.loanStudent.data = loan.loanStudent
     form.loanBook.data = loan.loanBook
-    form.status.data = loan.status
 
     return render_template('emprestimoEditar.html', form=form, loan=loan)
+
+
+@app.route('/emprestimo/devolver/<int:id>', methods=['POST'])
+@login_required
+def loanReturn(id):
+    loan = Loan.query.get_or_404(id)
+    book = Book.query.get(loan.loanBook)
+
+    book.availNumber += 1
+
+    evento = LoanEvent(
+        loan_id=loan.id,
+        event_type='Devolução',
+        book_title = loan.book.title,
+        student_name = loan.student.name
+    )
+    db.session.add(evento)
+    loan.returnDate = datetime.now()
+    loan.status = "Devolvido"
+    db.session.commit()
+    return redirect(url_for('loanList'))
 
 
 @app.route('/emprestimo/excluir/<int:id>', methods=['POST'])
@@ -227,9 +275,15 @@ def loanDelete(id):
     return redirect(url_for('loanList'))
 
 
-
 @app.route('/sair/')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('homepage'))
+
+
+@app.route('/historico/')
+@login_required
+def history():
+    eventos = LoanEvent.query.order_by(LoanEvent.event_date.desc()).all()
+    return render_template('historico.html', eventos=eventos)

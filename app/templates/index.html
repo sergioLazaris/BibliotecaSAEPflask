@@ -2,9 +2,6 @@
 {% block content %}
 
 <div class="container">
-    {% include 'nav.html' %}
-    <hr>
-
     <div>
         {% if current_user.is_authenticated %}
         <span class="btn btn-primary">{{current_user.name}} </span>

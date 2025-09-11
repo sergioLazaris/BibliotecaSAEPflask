@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4 p-4 round border shadow">
+    <h3>Histórico de Empréstimos e Devoluções</h3>
+    <hr>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Livro</th>
+                <th>Aluno</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for evento in eventos %}
+            <tr>
+                <td>{{ evento.event_date }}</td>
+                <td>{{ evento.event_type }}</td>
+                <td>{{ evento.book_title }}</td>
+                <td>{{ evento.student_name }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

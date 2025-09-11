@@ -2,8 +2,6 @@
 {% block content %}
 
     <div class = "container">
-        {% include 'nav.html' %}
-        <hr>
         <div class = "row">
             <h3>Lista de Empréstimos</h3>
         <form action="" method="get" class="row">
@@ -25,6 +23,7 @@
                         <th>Título Livro</th>
                         <th>Matrícula Aluno</th>
                         <th>Nome Aluno</th>
+                        <th>Limite de Devolução</th>
                         <th>Data de Devolução</th>
                         <th>Status</th>
                         <th>Ações</th>
@@ -32,23 +31,65 @@
                 </thead>
                 <body>
                     {% for linha in context['dados'] %}
-                    <tr>
-                        <td>{{linha.id}}</td>
-                        <td>{{linha.loanBook}}</td>
-                        <td>{{linha.book.name}}</td>
-                        <td>{{linha.loanStudent}}</td>
-                        <td>{{linha.student.name}}</td>
-                        <td>{{linha.returnDate}}</td>
-                        <td>{{linha.status}}</td>
-                        <td>
-                            <a href="{{ url_for('loanEdit', id=linha.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                            <form action="{{ url_for('loanDelete', id=linha.id) }}" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
-                                    Excluir
-                                </button>
-                            </form>
-                        </td>                        
-                        </tr>
+                    {% if linha.returnDate is none %}
+                        <tr>
+                            <td>{{linha.id}}</td>
+                            <td>{{linha.loanBook}}</td>
+                            <td>{{linha.book.title}}</td>
+                            <td>{{linha.loanStudent}}</td>
+                            <td>{{linha.student.name}}</td>
+                            <td>{{linha.returnLimit}}</td>
+                            <td>{{linha.returnDate}}</td>
+                            <td>{{linha.status}}</td>
+                            <td>
+                                <a href="{{ url_for('loanEdit', id=linha.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="{{ url_for('loanReturn', id=linha.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja devolver este empréstimo?')">
+                                        Devolver
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('loanDelete', id=linha.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </td>                        
+                            </tr>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% for linha in context['dados'] %}
+                    {% if linha.returnDate is not none %}
+                        <tr>
+                            <td>{{linha.id}}</td>
+                            <td>{{linha.loanBook}}</td>
+                            <td>{{linha.book.title}}</td>
+                            <td>{{linha.loanStudent}}</td>
+                            <td>{{linha.student.name}}</td>
+                            <td>{{linha.returnLimit}}</td>
+                            <td>{{linha.returnDate}}</td>
+                            <td>{{linha.status}}</td>
+                            <td>
+                                <a href="{{ url_for('loanEdit', id=linha.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="{{ url_for('loanReturn', id=linha.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja devolver este empréstimo?')">
+                                        Devolver
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('loanDelete', id=linha.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este empréstimo?')">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </td>                        
+                            </tr>
+                            {% set dias_para_limite = (linha.returnLimit - now()).days %}
+                            {% if linha.status == 'Emprestado' and dias_para_limite == 1 %}
+                            <div class="alert alert-warning">
+                                Atenção: O empréstimo do livro "{{ linha.book.title }}" para "{{ linha.student.name }}" vence amanhã!
+                            </div>
+                        {% endif %}
+                    {% endif %}
                     {% endfor %}
                 </body>
             </table>

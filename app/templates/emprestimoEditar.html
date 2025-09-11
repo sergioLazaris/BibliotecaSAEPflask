@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-    {% include 'nav.html' %}
-    <hr>
     <div class="row">
         <h3>Registro de Empréstimo</h3>
     </div>
@@ -14,9 +12,6 @@
 
         {{form.loanBook.label}}
         {{form.loanBook(class="form-control")}}
-
-        {{form.status.label}}
-        {{form.status(class="form-control")}}
 
         {{form.btnSubmit(class="btn btn-primary col-12 mt-3")}}
     </form>
