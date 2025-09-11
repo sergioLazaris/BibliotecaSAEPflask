@@ -4,6 +4,9 @@
 <div class="container">
     <div>
         {% if current_user.is_authenticated %}
+        <div>
+            <h3>Biblioteca SAEP</h3>
+        </div>
         <span class="btn btn-primary">{{current_user.name}} </span>
         <a href="{{url_for('logout')}}" class="btn btn-danger">Sair</a>
         {% else %}

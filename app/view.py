@@ -1,11 +1,12 @@
 from app import app, db
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 from app.forms import LoginForm, BookForm, SignInForm, StudentForm, LoanForm
 from app.models import Student, Book, Loan, LoanEvent
 from flask_login import login_user, logout_user, current_user, login_required 
 from datetime import datetime
 from flask import g
 from datetime import datetime, timedelta
+from sqlalchemy.exc import IntegrityError
 
 @app.before_request
 def atualizar_status_atrasados():
@@ -27,8 +28,17 @@ def homepage():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = form.login()
-        login_user(user, remember=True)
+        try:
+            user = form.login()
+            login_user(user, remember=True)
+        except:
+            db.session.rollback()
+            flash("Usuário ou senha incorretos!", "danger")
+    else:
+        if request.method == "POST":  # só mostra se o usuário realmente tentou enviar
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Erro no campo {getattr(form, field).label.text}: {error}", "danger")
 
     return render_template('index.html', form=form)
 
@@ -36,13 +46,24 @@ def homepage():
 @app.route('/livro/', methods=['POST', 'GET'])
 @login_required
 def bookRegister():
-
     form = BookForm()
     
     if form.validate_on_submit():
-        form.save()
-        return redirect(url_for('homepage'))
+        try:
+            form.save()
+            db.session.commit()
+            flash("Livro registrado!", "success")
+            return redirect(url_for('homepage'))
+        except IntegrityError:
+            db.session.rollback()
+            flash("Erro ao registrar livro: verifique os campos numéricos.", "danger")
+    elif request.method == "POST":
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Erro no campo {getattr(form, field).label.text}: {error}", "danger")
+                
     return render_template('livro.html', form=form)
+
 
 
 @app.route('/livro/lista/')
@@ -78,9 +99,13 @@ def bookEdit(id):
         book.availNumber = form.availNumber.data
         book.totalNumber = form.totalNumber.data
         db.session.commit()
-
+        flash("Livro editado com sucesso")
         return redirect(url_for('bookList'))  # redireciona de volta pra lista
-
+    else:
+        if request.method == "POST":  # só mostra se o usuário realmente tentou enviar
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Erro no campo {getattr(form, field).label.text}: {error}", "danger")
     # Preenche os campos do form com os valores antigos
     form.title.data = book.title 
     form.author.data = book.author
@@ -99,6 +124,7 @@ def bookDelete(id):
     book = Book.query.get_or_404(id)
     db.session.delete(book)
     db.session.commit()
+    flash("Livro excluído!")
     return redirect(url_for('bookList'))
 
 
@@ -109,6 +135,11 @@ def cadastro():
         user = form.save()
         login_user(user, remember=True)
         return redirect(url_for('homepage'))
+    else:
+        if request.method == "POST":  # só mostra se o usuário realmente tentou enviar
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f"Erro no campo {getattr(form, field).label.text}: {error}", "danger")
     return render_template('cadastro.html', form=form)
 
 
@@ -119,8 +150,15 @@ def studentRegister():
     form = StudentForm()
 
     if form.validate_on_submit():
-        form.save()
-        return redirect(url_for('homepage'))
+        try:
+            form.save()
+            db.session.commit()
+            flash("Aluno cadastrado com sucesso!", "success")
+            return redirect(url_for('studentList'))
+        except IntegrityError as e:
+            db.session.rollback()
+            flash("Erro ao cadastrar aluno: verifique se o campo 'Matrícula' foi preenchido corretamente.", "danger")
+
     return render_template('alunos.html', form=form)
 
 @app.route('/aluno/lista/')
@@ -150,7 +188,7 @@ def studentEdit(id):
         student.name = form.name.data
         student.registration = form.registration.data
         db.session.commit()
-
+        flash("Estudante editado com sucesso")
         return redirect(url_for('studentList'))  # redireciona de volta pra lista
 
     # Preenche os campos do form com os valores antigos
@@ -166,6 +204,7 @@ def studentDelete(id):
     student = Student.query.get_or_404(id)
     db.session.delete(student)
     db.session.commit()
+    flash("Aluno excluído!")
     return redirect(url_for('studentList'))
 
 
@@ -181,11 +220,14 @@ def loanRegister():
         book = Book.query.get(form.loanBook.data)
 
         if not student:
-            raise ValueError("Aluno não encontrado")
+            flash("Aluno não encontrado!", "danger")
+            return redirect(url_for('loanRegister'))
         if not book:
-            raise ValueError("Livro não encontrado")
+            flash("Livro não encontrado!", "danger")
+            return redirect(url_for('loanRegister'))
         if book.availNumber <= 0:
-            raise ValueError("Quantidade de livros disponíveis insuficiente")
+            flash("Quantidade de livros disponíveis insuficiente!", "warning")
+            return redirect(url_for('loanRegister'))
         book.availNumber -= 1
         form.save()
         loan = Loan.query.order_by(Loan.id.desc()).first()
@@ -197,6 +239,7 @@ def loanRegister():
         )
         db.session.add(evento)
         db.session.commit()
+        flash("Empréstimo registrado!")
         return redirect(url_for('homepage'))
     return render_template('emprestimo.html', form=form)
 
@@ -227,15 +270,20 @@ def loanEdit(id):
         book = Book.query.get(form.loanBook.data)
 
         if not student:
-            raise ValueError("Aluno não encontrado")
+            flash("Aluno não encontrado!", "danger")
+            return redirect(url_for('loanRegister'))
         if not book:
-            raise ValueError("Livro não encontrado")
+            flash("Livro não encontrado!", "danger")
+            return redirect(url_for('loanRegister'))
+        if book.availNumber <= 0:
+            flash("Quantidade de livros disponíveis insuficiente!", "warning")
+            return redirect(url_for('loanRegister'))
 
         # Atualiza os campos do empréstimo
         loan.loanStudent = form.loanStudent.data
         loan.loanBook = form.loanBook.data
         db.session.commit()
-
+        flash("Empréstimo editado!")
         return redirect(url_for('loanList'))  # redireciona de volta pra lista
 
     # Preenche os campos do form com os valores antigos
@@ -263,6 +311,7 @@ def loanReturn(id):
     loan.returnDate = datetime.now()
     loan.status = "Devolvido"
     db.session.commit()
+    flash("Livro devolvido!")
     return redirect(url_for('loanList'))
 
 
@@ -272,6 +321,7 @@ def loanDelete(id):
     loan = Loan.query.get_or_404(id)
     db.session.delete(loan)
     db.session.commit()
+    flash("Livro excluído!")
     return redirect(url_for('loanList'))
 
 
